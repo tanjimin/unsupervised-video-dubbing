@@ -82,7 +82,7 @@ class LRW():
         self.istrain = (folds == 'train')
         self.test_case = False
         
-        with open('../label_sorted.txt') as myfile:
+        with open('./data/label_sorted.txt') as myfile:
             self.data_dir = myfile.read().splitlines()
 
         self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npz')
