@@ -1,8 +1,8 @@
 class LRW_Dataset_AV():
 
-    def __init__(self, labels_file = './data/label_sorted.txt', 
+    def __init__(self, folds,
+                 labels_file = './data/label_sorted.txt', 
                  data_dir = '/beegfs/cy1355/lipread_datachunk/', 
-                 folds,
                  transform = None):
         """
         Args:
