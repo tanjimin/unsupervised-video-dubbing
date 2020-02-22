@@ -56,7 +56,7 @@ class LRW_Dataset_AV():
 def npy_loader_aug(file, v_flag):
     
     data = np.load(file)
-    if v_flag = 1:
+    if v_flag == 1:
         keypoints = torch.tensor(data).float()
 
         keypoints_move = keypoints * 0.7
@@ -71,7 +71,7 @@ def npy_loader_aug(file, v_flag):
 def npy_loader_aug_test(file, v_flag):
     
     data = np.load(file)
-    if v_flag = 1:
+    if v_flag == 1:
         keypoints = torch.tensor(data).float()
 
         keypoints_move = keypoints * 0.7
