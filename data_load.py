@@ -1,17 +1,34 @@
-class FaceLandmarksDataset(Dataset):
-    """Face Landmarks dataset."""
+class LRW_Dataset_AV(Dataset):
+    """Face Landmarks and audio dataset (pre-processed data from LRW)."""
 
-    def __init__(self, csv_file, root_dir, transform=None):
+    def __init__(self, labels_dir, data_dir = '', transform = None):
         """
         Args:
-            csv_file (string): Path to the csv file with annotations.
+            video_landmarks_path (string): Path to the file with facial landmarks.
+            audio_mfcc_path (string): Path to the file with the audio features (MFCC).
             root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.landmarks_frame = pd.read_csv(csv_file)
-        self.root_dir = root_dir
-        self.transform = transform
+      
+        self.labels_dir = labels_dir
+        with open(self.labels_dir) as myfile:
+            self.data_dir = myfile.read().splitlines()
+
+        self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npy')
+        self.data_files = []
+        for category in self.data_dir:
+            self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
+        self.list = {}
+        
+        for i, x in enumerate(self.data_files):
+            target = x.split('/')[-3]
+            for j, elem in enumerate(self.data_dir):
+                if elem == target:
+                    self.list[i] = [x]
+                    self.list[i].append(j)
+
+        print('Load {} part'.format(self.folds))
 
     def __len__(self):
         return len(self.landmarks_frame)
@@ -22,7 +39,7 @@ class FaceLandmarksDataset(Dataset):
 
         img_name = os.path.join(self.root_dir,
                                 self.landmarks_frame.iloc[idx, 0])
-        image = io.imread(img_name)
+        image = np.load(img_name)
         landmarks = self.landmarks_frame.iloc[idx, 1:]
         landmarks = np.array([landmarks])
         landmarks = landmarks.astype('float').reshape(-1, 2)
@@ -34,3 +51,43 @@ class FaceLandmarksDataset(Dataset):
         return sample
 
 
+
+   class LRW():
+    def __init__(self, folds, path):
+
+        self.folds = folds  # ['train', 'val', 'test']
+        self.path = path
+        self.istrain = (folds == 'train')
+        self.test_case = False
+        
+        with open('./data/label_sorted.txt') as myfile:
+            self.data_dir = myfile.read().splitlines()
+
+        self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npz')
+        self.data_files = []
+        for category in self.data_dir:
+            self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
+        self.list = {}
+        
+        for i, x in enumerate(self.data_files):
+            target = x.split('/')[-3]
+            for j, elem in enumerate(self.data_dir):
+                if elem == target:
+                    self.list[i] = [x]
+                    self.list[i].append(j)
+
+        print('Load {} part'.format(self.folds))
+
+    def __getitem__(self, idx):
+
+        if self.test_case:
+            keypoints, mfcc = npz_loader_aug_test(self.list[idx][0])        
+            labels = self.list[idx][1]
+            return (keypoints, mfcc), labels
+        else:
+            keypoints, mfcc = npz_loader_aug(self.list[idx][0])        
+            labels = self.list[idx][1]
+            return (keypoints, mfcc), labels
+
+    def __len__(self):
+        return len(self.data_files)
