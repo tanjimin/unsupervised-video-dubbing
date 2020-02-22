@@ -22,17 +22,20 @@ class LRW_Dataset_AV(Dataset):
         self.audio_files_path = os.path.join(self.data_dir, '|', self.folds, 'audio.npy')
         self.video_files = []
         self.audio_files = []
+            
+        self.v_list = {}
+        self.a_list = {}
         
         for d in self.data_dir:
             self.video_files += (glob.glob(os.path.join(d, self.folds, 'video.npy')))
             self.audio_files += (glob.glob(os.path.join(d, self.folds, 'audio.npy')))
   
-        for i, x in enumerate(self.data_files):
+        for i, x in enumerate(self.video_files):
             target = x.split('/')[-3]
             for j, elem in enumerate(self.data_dir):
                 if elem == target:
-                    self.list[i] = [x]
-                    self.list[i].append(j)
+                    self.v_list[i] = [x]
+                    self.v_list[i].append(j)
         
         print('Load {} part'.format(self.folds))
 
@@ -42,54 +45,48 @@ class LRW_Dataset_AV(Dataset):
     def __getitem__(self, idx):
             
         if self.folds == 'test':
-            video, audio = npz_loader_aug_test(self.list[idx][0])        
-            labels = self.list[idx][1]
+            video = npy_loader_aug_test(self.v_list[idx][0])
+            audio = npy_loader_aug_test(self.a_list[idx][0])
+            labels = self.v_list[idx][1]
             return (video, audio), labels
         else:
-            video, audio = npz_loader_aug(self.list[idx][0])        
-            labels = self.list[idx][1]
+            video = npy_loader_aug(self.v_list[idx][0])
+            audio = npy_loader_aug(self.a_list[idx][0])
+            labels = self.v_list[idx][1]
             return (video, audio), labels
 
         return sample
 
+def npy_loader_aug(file, v_flag):
+    
+    data = np.load(file)
+    if v_flag = 1:
+        keypoints = torch.tensor(data).float()
+
+        keypoints_move = keypoints * 0.7
+        ones = torch.ones(keypoints.shape, dtype = torch.float)
+        randint = torch.randint(1,73,(1,),dtype = torch.float)
+        d = keypoints_move + ones * randint
+    
+    else:
+        d = torch.tensor(data).float()
+    return d
+
+def npy_loader_aug(file, v_flag):
+    
+    data = np.load(file)
+    if v_flag = 1:
+        keypoints = torch.tensor(data).float()
+
+        keypoints_move = keypoints * 0.7
+        ones = torch.ones(keypoints.shape, dtype = torch.float)
+        randint = torch.randint(1,73,(1,),dtype = torch.float)
+        d = keypoints_move + ones * 38
+    
+    else:
+        d = torch.tensor(data).float()
+    return d
 
 
-   class LRW():
-    def __init__(self, folds, path):
 
-        self.folds = folds  # ['train', 'val', 'test']
-        self.path = path
-        self.istrain = (folds == 'train')
-        self.test_case = False
-        
-        with open('./data/label_sorted.txt') as myfile:
-            self.data_dir = myfile.read().splitlines()
-         
-        self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npz')
-        self.data_files = []
-        for category in self.data_dir:
-            self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
-        self.list = {}
-        
-        for i, x in enumerate(self.data_files):
-            target = x.split('/')[-3]
-            for j, elem in enumerate(self.data_dir):
-                if elem == target:
-                    self.list[i] = [x]
-                    self.list[i].append(j)
 
-        print('Load {} part'.format(self.folds))
-
-    def __getitem__(self, idx):
-
-        if self.test_case:
-            keypoints, mfcc = npz_loader_aug_test(self.list[idx][0])        
-            labels = self.list[idx][1]
-            return (keypoints, mfcc), labels
-        else:
-            keypoints, mfcc = npz_loader_aug(self.list[idx][0])        
-            labels = self.list[idx][1]
-            return (keypoints, mfcc), labels
-
-    def __len__(self):
-        return len(self.data_files)
