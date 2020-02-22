@@ -12,7 +12,7 @@ class LRW_Dataset_AV():
             transform (callable, optional): Optional transform to be applied
                 on a sample
         """
-      
+        self.folds = folds
         self.labels_file = labels_file
         with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
