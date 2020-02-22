@@ -1,8 +1,13 @@
+import os
+import glob
+import numpy as np
+import torch
+
 class LRW_Dataset_AV():
 
     def __init__(self, folds,
                  labels_file = './data/label_sorted.txt', 
-                 data_dir = '/beegfs/cy1355/lipread_datachunk/', 
+                 root_path = '/beegfs/cy1355/lipread_datachunk/', 
                  transform = None):
         """
         Args:
@@ -14,6 +19,7 @@ class LRW_Dataset_AV():
         """
         self.folds = folds
         self.labels_file = labels_file
+        self.root_path = root_path
         with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
         self.video_files = []
@@ -23,8 +29,8 @@ class LRW_Dataset_AV():
         self.a_list = {}
         
         for d in self.data_dir:
-            self.video_files += (glob.glob(os.path.join(d, self.folds, 'video.npy')))
-            self.audio_files += (glob.glob(os.path.join(d, self.folds, 'audio.npy')))
+            self.video_files.append(os.path.join(self.root_path, d, self.folds, 'video.npy'))
+            self.audio_files.append(os.path.join(self.root_path, d, self.folds, 'audio.npy'))
   
         for i, x in enumerate(self.video_files):
             target = x.split('/')[-3]
@@ -32,22 +38,29 @@ class LRW_Dataset_AV():
                 if elem == target:
                     self.v_list[i] = [x]
                     self.v_list[i].append(j)
+                    
+        for i, x in enumerate(self.audio_files):
+            target = x.split('/')[-3]
+            for j, elem in enumerate(self.data_dir):
+                if elem == target:
+                    self.a_list[i] = [x]
+                    self.a_list[i].append(j)
         
         print('Load {} part'.format(self.folds))
 
     def __len__(self):
-        return "length placeholder"
+        return len(self.video_files)
 
     def __getitem__(self, idx):
             
         if self.folds == 'test':
-            video = npy_loader_aug_test(self.v_list[idx][0])
-            audio = npy_loader_aug_test(self.a_list[idx][0])
+            video = npy_loader_aug_test(self.v_list[idx][0], v_flag = 1)
+            audio = npy_loader_aug_test(self.a_list[idx][0], v_flag = 0)
             labels = self.v_list[idx][1]
             return (video, audio), labels
         else:
-            video = npy_loader_aug(self.v_list[idx][0])
-            audio = npy_loader_aug(self.a_list[idx][0])
+            video = npy_loader_aug(self.v_list[idx][0], v_flag = 1)
+            audio = npy_loader_aug(self.a_list[idx][0], v_flag = 1)
             labels = self.v_list[idx][1]
             return (video, audio), labels
 
@@ -82,7 +95,3 @@ def npy_loader_aug_test(file, v_flag):
     else:
         d = torch.tensor(data).float()
     return d
-
-
-
-
