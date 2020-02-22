@@ -1,5 +1,4 @@
-class LRW_Dataset_AV(Dataset):
-    """Face Landmarks and audio dataset (pre-processed data from LRW)."""
+class LRW_Dataset_AV():
 
     def __init__(self, labels_file = './data/label_sorted.txt', 
                  data_dir = '/beegfs/cy1355/lipread_datachunk/', 
