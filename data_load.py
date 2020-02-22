@@ -1,52 +1,54 @@
 class LRW_Dataset_AV(Dataset):
     """Face Landmarks and audio dataset (pre-processed data from LRW)."""
 
-    def __init__(self, labels_file, data_dir = '', transform = None):
+    def __init__(self, labels_file = './data/label_sorted.txt', 
+                 data_dir = '/beegfs/cy1355/lipread_datachunk/', 
+                 folds,
+                 transform = None):
         """
         Args:
-            labels_file (string): Path to the text file with labels.
-            data_dir (string): Path to the file with the facial landmarks and audio features (MFCC).
-            root_dir (string): Directory with all the images.
+            labels_file (string): Path to the text file with labels
+            data_dir (string): Path to the file with the facial landmarks and audio features (MFCC)
+            folds (string): train / val / test indicator
             transform (callable, optional): Optional transform to be applied
-                on a sample.
+                on a sample
         """
       
         self.labels_file = labels_file
         with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
 
-        self.data_files_path = os.path.join(self.data_dir, '/', self.folds, '*.npy')
-        self.data_files = []
-        for category in self.data_dir:
-            self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
-        self.list = {}
+        self.video_files_path = os.path.join(self.data_dir, '|', self.folds, 'video.npy')
+        self.audio_files_path = os.path.join(self.data_dir, '|', self.folds, 'audio.npy')
+        self.video_files = []
+        self.audio_files = []
         
+        for d in self.data_dir:
+            self.video_files += (glob.glob(os.path.join(d, self.folds, 'video.npy')))
+            self.audio_files += (glob.glob(os.path.join(d, self.folds, 'audio.npy')))
+  
         for i, x in enumerate(self.data_files):
             target = x.split('/')[-3]
             for j, elem in enumerate(self.data_dir):
                 if elem == target:
                     self.list[i] = [x]
                     self.list[i].append(j)
-
+        
         print('Load {} part'.format(self.folds))
 
     def __len__(self):
-        return len(self.landmarks_frame)
+        return "length placeholder"
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        img_name = os.path.join(self.root_dir,
-                                self.landmarks_frame.iloc[idx, 0])
-        image = np.load(img_name)
-        landmarks = self.landmarks_frame.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
-
-        if self.transform:
-            sample = self.transform(sample)
+            
+        if self.folds == 'test':
+            video, audio = npz_loader_aug_test(self.list[idx][0])        
+            labels = self.list[idx][1]
+            return (video, audio), labels
+        else:
+            video, audio = npz_loader_aug(self.list[idx][0])        
+            labels = self.list[idx][1]
+            return (video, audio), labels
 
         return sample
 
@@ -62,7 +64,7 @@ class LRW_Dataset_AV(Dataset):
         
         with open('./data/label_sorted.txt') as myfile:
             self.data_dir = myfile.read().splitlines()
-
+         
         self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npz')
         self.data_files = []
         for category in self.data_dir:
