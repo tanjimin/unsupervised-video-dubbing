@@ -17,9 +17,6 @@ class LRW_Dataset_AV(Dataset):
         self.labels_file = labels_file
         with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
-
-        self.video_files_path = os.path.join(self.data_dir, '|', self.folds, 'video.npy')
-        self.audio_files_path = os.path.join(self.data_dir, '|', self.folds, 'audio.npy')
         self.video_files = []
         self.audio_files = []
             
@@ -72,7 +69,7 @@ def npy_loader_aug(file, v_flag):
         d = torch.tensor(data).float()
     return d
 
-def npy_loader_aug(file, v_flag):
+def npy_loader_aug_test(file, v_flag):
     
     data = np.load(file)
     if v_flag = 1:
