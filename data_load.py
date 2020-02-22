@@ -1,21 +1,21 @@
 class LRW_Dataset_AV(Dataset):
     """Face Landmarks and audio dataset (pre-processed data from LRW)."""
 
-    def __init__(self, labels_dir, data_dir = '', transform = None):
+    def __init__(self, labels_file, data_dir = '', transform = None):
         """
         Args:
-            video_landmarks_path (string): Path to the file with facial landmarks.
-            audio_mfcc_path (string): Path to the file with the audio features (MFCC).
+            labels_file (string): Path to the text file with labels.
+            data_dir (string): Path to the file with the facial landmarks and audio features (MFCC).
             root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
       
-        self.labels_dir = labels_dir
-        with open(self.labels_dir) as myfile:
+        self.labels_file = labels_file
+        with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
 
-        self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npy')
+        self.data_files_path = os.path.join(self.data_dir, '/', self.folds, '*.npy')
         self.data_files = []
         for category in self.data_dir:
             self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
