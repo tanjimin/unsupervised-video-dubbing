@@ -1,5 +1,6 @@
 import sys
-sys.append('..')
+sys.path.append('.')
+from data import LRW_Dataset_AV
 
-dataset = LRW_Dataset_AV('test')
-import pdb; pbd.set_trace()
+dataset = LRW_Dataset_AV('train')
+import pdb; pdb.set_trace()
