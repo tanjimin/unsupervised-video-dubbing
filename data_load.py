@@ -7,12 +7,12 @@ class LRW_Dataset_AV():
 
     def __init__(self, folds,
                  labels_file = './data/label_sorted.txt', 
-                 root_path = '/beegfs/cy1355/lipread_datachunk/', 
+                 root_path = '/beegfs/cy1355/lipread_datachunk_big/', 
                  transform = None):
         """
         Args:
             labels_file (string): Path to the text file with labels
-            data_dir (string): Path to the file with the facial landmarks and audio features (MFCC)
+            root_path (string): Path to the file with the facial landmarks and audio features (MFCC)
             folds (string): train / val / test indicator
             transform (callable, optional): Optional transform to be applied
                 on a sample
@@ -22,48 +22,38 @@ class LRW_Dataset_AV():
         self.root_path = root_path
         with open(self.labels_file) as myfile:
             self.data_dir = myfile.read().splitlines()
-        self.video_files = []
-        self.audio_files = []
             
         self.v_list = {}
         self.a_list = {}
         
-        for d in self.data_dir:
-            self.video_files.append(os.path.join(self.root_path, d, self.folds, 'video.npy'))
-            self.audio_files.append(os.path.join(self.root_path, d, self.folds, 'audio.npy'))
+        self.video_file = os.path.join(self.root_path, 'video_' + self.folds+ '.npy')
+        self.audio_file = os.path.join(self.root_path, 'audio_' + self.folds +'.npy')
   
-        for i, x in enumerate(self.video_files):
-            target = x.split('/')[-3]
-            for j, elem in enumerate(self.data_dir):
-                if elem == target:
-                    self.v_list[i] = [x]
-                    self.v_list[i].append(j)
-                    
-        for i, x in enumerate(self.audio_files):
-            target = x.split('/')[-3]
-            for j, elem in enumerate(self.data_dir):
-                if elem == target:
-                    self.a_list[i] = [x]
-                    self.a_list[i].append(j)
+        if self.folds == 'test':
+            self.video = npy_loader_aug_test(self.video_file, v_flag = 1)
+            self.audio = npy_loader_aug_test(self.audio_file, v_flag = 0)
+        else:
+            self.video = npy_loader_aug(self.video_file, v_flag = 1)
+            self.audio = npy_loader_aug(self.audio_file, v_flag = 0)
+            
+        self.labels = 0
         
-        print('Load {} part'.format(self.folds))
+        print('Loading {} part'.format(self.folds))
 
     def __len__(self):
-        return len(self.video_files)
+        return self.video.shape[0]
 
     def __getitem__(self, idx):
             
-        if self.folds == 'test':
-            video = npy_loader_aug_test(self.v_list[idx][0], v_flag = 1)
-            audio = npy_loader_aug_test(self.a_list[idx][0], v_flag = 0)
-            labels = self.v_list[idx][1]
-            return (video, audio), labels
-        else:
-            video = npy_loader_aug(self.v_list[idx][0], v_flag = 1)
-            audio = npy_loader_aug(self.a_list[idx][0], v_flag = 1)
-            labels = self.v_list[idx][1]
-            return (video, audio), labels
-
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+        vid = self.video[idx, :, :, :]
+        aud = self.audio[idx, :, :]
+        labels = 0
+        
+        sample = (vid, aud), labels
+        
         return sample
 
 def npy_loader_aug(file, v_flag):
