@@ -3,7 +3,7 @@ import glob
 import numpy as np
 import torch
 
-class LRW_Dataset_AV():
+class LRW():
 
     def __init__(self, folds,
                  labels_file = './data/label_sorted.txt', 
