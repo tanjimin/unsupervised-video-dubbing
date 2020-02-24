@@ -18,9 +18,9 @@ from PIL import Image
 import datetime
 
 parser = argparse.ArgumentParser(description='Lip Generator Example')
-parser.add_argument('--data', type=str, default='/beegfs/cy1355/wav_audio_lipread_npz/', metavar='N',
+parser.add_argument('--data', type=str, default='/beegfs/cy1355/lipread_datachunk_big/', metavar='N',
                     help='data root directory')
-parser.add_argument('--batch-size', type=int, default=256, metavar='N',
+parser.add_argument('--batch-size', type=int, default=1024, metavar='N',
                     help='input batch size for training (default: 512)')
 parser.add_argument('--epochs', type=int, default=1001, metavar='N',
                     help='number of epochs to train (default: 10)')
@@ -130,7 +130,7 @@ decoder_optimizer = optim.Adam(face_decoder.parameters(), lr=1e-3, betas=(0.5, 0
 mse_loss = torch.nn.MSELoss()
 
 
-dsets = {x: LRW(x, args.data) for x in ['train', 'val', 'test']}
+dsets = {x: LRW(x, root_path = args.data) for x in ['train', 'val', 'test']}
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=args.batch_size,\
                        shuffle=True, **kwargs) \
                        for x in ['train', 'val', 'test']}
