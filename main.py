@@ -11,14 +11,16 @@ from torch import nn, optim
 from torchvision import datasets, transforms
 from torchvision.utils import make_grid, save_image
 
+from data import LRW
+
 from PIL import Image
 
 import datetime
 
 parser = argparse.ArgumentParser(description='Lip Generator Example')
-parser.add_argument('--data', type=str, default='/beegfs/cy1355/wav_audio_lipread_npz/', metavar='N',
+parser.add_argument('--data', type=str, default='/beegfs/cy1355/lipread_datachunk_big/', metavar='N',
                     help='data root directory')
-parser.add_argument('--batch-size', type=int, default=256, metavar='N',
+parser.add_argument('--batch-size', type=int, default=1024, metavar='N',
                     help='input batch size for training (default: 512)')
 parser.add_argument('--epochs', type=int, default=1001, metavar='N',
                     help='number of epochs to train (default: 10)')
@@ -34,86 +36,9 @@ args.cuda = not args.no_cuda and torch.cuda.is_available()
 device = torch.device("cuda" if args.cuda else "cpu")
 
 
-def npz_loader_aug(file):
-    data_tuple = np.load(file)
-    keypoints = torch.tensor(data_tuple['video_npy']).float()
-    
-    keypoints_move = keypoints * 0.7
-    ones = torch.ones(keypoints.shape, dtype = torch.float)
-    randint = torch.randint(1,73,(1,),dtype = torch.float)
-    keypoints_new = keypoints_move + ones * randint
-
-    mfcc = torch.tensor(data_tuple['mfcc_npy']).float()
-    return keypoints_new, mfcc
-
-def npz_loader_aug_test(file):
-    data_tuple = np.load(file)
-    keypoints = torch.tensor(data_tuple['video_npy']).float()
-    
-    keypoints_move = keypoints * 0.7
-    ones = torch.ones(keypoints.shape, dtype = torch.float)
-    keypoints_new = keypoints_move + ones * 38
-
-    mfcc = torch.tensor(data_tuple['mfcc_npy']).float()
-    return keypoints_new, mfcc
-
-# def npz_loader(file):
-#     data_tuple = np.load(file)
-#     keypoints = torch.tensor(data_tuple['video_npy']).float()
-#     mfcc = torch.tensor(data_tuple['mfcc_npy']).float()
-#     return keypoints, mfcc
-
 kwargs = {'num_workers': 4, 'pin_memory': True} if args.cuda else {}
 
 print('Run on {}'.format(device))
-# train_loader = torch.utils.data.DataLoader(
-#     datasets.DatasetFolder(os.path.join(args.data, 'train'), npz_loader, extensions='npz'),
-#     batch_size=args.batch_size, shuffle=True, **kwargs)
-
-# test_loader = torch.utils.data.DataLoader(
-#     datasets.DatasetFolder(os.path.join(args.data, 'test'), npz_loader, extensions='npz'),
-#     batch_size=args.batch_size, shuffle=True, **kwargs)
-
-class LRW():
-    def __init__(self, folds, path):
-
-        self.folds = folds  # ['train', 'val', 'test']
-        self.path = path
-        self.istrain = (folds == 'train')
-        self.test_case = False
-        
-        with open('./data/label_sorted.txt') as myfile:
-            self.data_dir = myfile.read().splitlines()
-
-        self.data_files_path = os.path.join(self.path, '|', self.folds, '*.npz')
-        self.data_files = []
-        for category in self.data_dir:
-            self.data_files += (glob.glob(self.data_files_path.replace('|', category)))
-        self.list = {}
-        
-        for i, x in enumerate(self.data_files):
-            target = x.split('/')[-3]
-            for j, elem in enumerate(self.data_dir):
-                if elem == target:
-                    self.list[i] = [x]
-                    self.list[i].append(j)
-
-        print('Load {} part'.format(self.folds))
-
-    def __getitem__(self, idx):
-
-        if self.test_case:
-            keypoints, mfcc = npz_loader_aug_test(self.list[idx][0])        
-            labels = self.list[idx][1]
-            return (keypoints, mfcc), labels
-        else:
-            keypoints, mfcc = npz_loader_aug(self.list[idx][0])        
-            labels = self.list[idx][1]
-            return (keypoints, mfcc), labels
-
-    def __len__(self):
-        return len(self.data_files)
-
 
 class FaceEncoder(nn.Module):
     def __init__(self):
@@ -205,7 +130,7 @@ decoder_optimizer = optim.Adam(face_decoder.parameters(), lr=1e-3, betas=(0.5, 0
 mse_loss = torch.nn.MSELoss()
 
 
-dsets = {x: LRW(x, args.data) for x in ['train', 'val', 'test']}
+dsets = {x: LRW(x, root_path = args.data) for x in ['train', 'val', 'test']}
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=args.batch_size,\
                        shuffle=True, **kwargs) \
                        for x in ['train', 'val', 'test']}
