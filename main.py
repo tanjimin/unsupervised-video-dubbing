@@ -11,10 +11,9 @@ from torch import nn, optim
 from torchvision import datasets, transforms
 from torchvision.utils import make_grid, save_image
 
+from model import FaceEncoder, AudioEncoder, FaceDecoder
 from data import LRW
-
 from PIL import Image
-
 import datetime
 
 parser = argparse.ArgumentParser(description='Lip Generator Example')
@@ -32,106 +31,20 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
-
 device = torch.device("cuda" if args.cuda else "cpu")
-
-
 kwargs = {'num_workers': 4, 'pin_memory': True} if args.cuda else {}
 
 print('Run on {}'.format(device))
 
-class FaceEncoder(nn.Module):
-    def __init__(self):
-        super(FaceEncoder, self).__init__()
-
-        self.encoder = nn.Sequential(
-            nn.Linear(96, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Linear(64, 16),
-            nn.BatchNorm1d(16),
-            nn.ReLU(),
-            )
-
-        for m in self.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        return self.encoder(x)
 
 face_encoder = FaceEncoder().to(device)
 
-class AudioEncoder(nn.Module):
-    def __init__(self):
-        super(AudioEncoder, self).__init__()
-
-        self.encoder = nn.Sequential(
-            nn.Linear(12, 32),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.Linear(32, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Linear(64, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            )
-
-        for m in self.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        return self.encoder(x)
-
 audio_encoder = AudioEncoder().to(device)
 encoders_params = list(face_encoder.parameters()) + list(audio_encoder.parameters())
-# TO DO: Check for beta parameters for adam optimizer.
 encoders_optimizer = optim.Adam(encoders_params, lr=1e-3, betas=(0.5, 0.999))
-
-class FaceDecoder(nn.Module):
-    def __init__(self):
-        super(FaceDecoder, self).__init__()
-        h_GRU = 144 
-        self.stabilizer = nn.GRU(144, h_GRU, 2, batch_first = True, dropout = 0.2)
-
-        self.decoder = nn.Sequential(
-            nn.Linear(144, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Linear(128, 40),
-            nn.Sigmoid(),
-            )
-
-        for m in self.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        x, _ = self.stabilizer(x)
-        return self.decoder(x.reshape(-1, 144))
-
 face_decoder = FaceDecoder().to(device)
 decoder_optimizer = optim.Adam(face_decoder.parameters(), lr=1e-3, betas=(0.5, 0.999))
-
 mse_loss = torch.nn.MSELoss()
-
 
 dsets = {x: LRW(x, root_path = args.data) for x in ['train', 'val', 'test']}
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=args.batch_size,\

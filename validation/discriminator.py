@@ -29,7 +29,6 @@ def train(epoch):
         keypoints = keypoints.to(device)
         mfcc = mfcc.transpose(1,2).to(device).view(-1, 12)
 
-        #import pdb; pdb.set_trace()
         mouth_points = keypoints[:, : ,48:68].view(-1, 40)
 
         mouth_embedding = mouth_encoder(mouth_points)
