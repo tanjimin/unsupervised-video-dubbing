@@ -102,6 +102,8 @@ encoders_optimizer = optim.Adam(encoders_params, lr=1e-3, betas=(0.5, 0.999))
 class FaceDecoder(nn.Module):
     def __init__(self):
         super(FaceDecoder, self).__init__()
+        h_GRU = 144 
+        self.stabilizer = nn.GRU(144, h_GRU, 2, batch_first = True, dropout = 0.2)
 
         self.decoder = nn.Sequential(
             nn.Linear(144, 256),
@@ -122,7 +124,8 @@ class FaceDecoder(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        return self.decoder(x)
+        x, _ = self.stabilizer(x)
+        return self.decoder(x.reshape(-1, 144))
 
 face_decoder = FaceDecoder().to(device)
 decoder_optimizer = optim.Adam(face_decoder.parameters(), lr=1e-3, betas=(0.5, 0.999))
@@ -176,7 +179,6 @@ def train(epoch):
         keypoints = keypoints.to(device)
         mfcc = mfcc.transpose(1,2).to(device).view(-1, 12)
 
-        #import pdb; pdb.set_trace()
         face_points = keypoints[:, :, :48].view(-1, 96)
         mouth_points = keypoints[:, : ,48:68].view(-1, 40)
 
@@ -191,7 +193,7 @@ def train(epoch):
         mixed_face_embedding = torch.cat((face_embedding, shuffled_face_embedding), dim = 0)
         doubled_audio_embedding = torch.cat((audio_embedding, audio_embedding), dim = 0)
 
-        mixed_embedding = torch.cat((mixed_face_embedding, doubled_audio_embedding), dim = 1)
+        mixed_embedding = torch.cat((mixed_face_embedding, doubled_audio_embedding), dim = 1).view(batch_size * 2, -1, 144)
 
         mixed_mouth_points_pred = face_decoder(mixed_embedding) * 255
 
@@ -289,7 +291,7 @@ def test(epoch):
             face_embedding = face_encoder(face_points)
             audio_embedding = audio_encoder(mfcc)
 
-            embedding = torch.cat((face_embedding, audio_embedding), dim = 1)
+            embedding = torch.cat((face_embedding, audio_embedding), dim = 1).view(batch_size, -1, 144)
 
             mouth_points_pred = face_decoder(embedding) * 255
 

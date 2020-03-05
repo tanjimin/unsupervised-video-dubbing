@@ -133,3 +133,7 @@ dmypy.json
 
 # Vim
 *.swp
+
+# Saves
+wav_saves_base
+wav_results_base
