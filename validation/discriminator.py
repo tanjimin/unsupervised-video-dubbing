@@ -46,17 +46,10 @@ def main():
     for epoch in range(0, epochs):
         train(epoch, train_loader)
     
-    input_mouth = torch.rand(29, 40)
-    input_audio = torch.rand(29, 12)
-    mouth_feature = mouth_encoder(input_mouth)
-    audio_feature = audio_encoder(input_audio)
-    result = discriminator(mouth_feature, audio_feature)
-    import pdb; pdb.set_trace()
 
 
 def train(epoch, train_loader):
-    mouth_encoder.train()
-    audio_encoder.train()
+    discriminator.train()
 
     train_loss = 0
     train_loader.dataset.test_case = False
@@ -66,27 +59,20 @@ def train(epoch, train_loader):
         batch_size = keypoints.shape[0]
         video_length = keypoints.shape[1]
 
-        encoders_optimizer.zero_grad()
+        discriminator_optimizer.zero_grad()
 
         keypoints = keypoints.to(device)
-        mfcc = mfcc.transpose(1,2).to(device).view(-1, 12)
+        mfcc = mfcc.transpose(1,2).to(device).view(batch_size, video_length, 12)
 
-        mouth_points = keypoints[:, : ,48:68].view(-1, 40)
+        mouth_points = keypoints[:, : ,48:68].view(batch_size, video_length, 40)
 
-        mouth_embedding = mouth_encoder(mouth_points)
-        audio_embedding = audio_encoder(mfcc)
-
-        # Shuffle mouth_embedding
         shuffle_index = torch.randperm(batch_size)
-        mouth_embedding_extended = mouth_embedding.view(batch_size, video_length, -1)
-        shuffled_mouth_embedding = mouth_embedding_extended[shuffle_index].view(batch_size * video_length, -1)
+        shuffled_mouth_points = mouth_points[shuffle_index]
 
-        mixed_mouth_embedding = torch.cat((mouth_embedding, shuffled_mouth_embedding), dim = 0)
-        doubled_audio_embedding = torch.cat((audio_embedding, audio_embedding), dim = 0)
+        mixed_mouth_points = torch.cat((mouth_points, shuffled_mouth_points), dim = 0).view(-1, 40)
+        doubled_mfcc = torch.cat((mfcc, mfcc), dim = 0).view(-1, 12)
 
-        #mixed_embedding = torch.cat((mixed_mouth_embedding, doubled_audio_embedding), dim = 1)
-
-        mixed_align_pred = discriminator(mixed_mouth_embedding, doubled_audio_embedding) 
+        mixed_align_pred = discriminator(mixed_mouth_points, doubled_mfcc) 
 
         correct_pred = mixed_align_pred[:batch_size * video_length]
         wrong_pred = mixed_align_pred[batch_size * video_length:]
@@ -96,7 +82,7 @@ def train(epoch, train_loader):
 
         train_loss += loss.item()
 
-        encoders_optimizer.step()
+        discriminator_optimizer.step()
 
         if batch_idx % args.log_interval == 0:
             
@@ -112,67 +98,11 @@ def train(epoch, train_loader):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class MouthEncoder(nn.Module):
-    def __init__(self):
-        super(MouthEncoder, self).__init__()
-
-        self.encoder = nn.Sequential(
-            nn.Linear(40, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Linear(64, 16),
-            nn.BatchNorm1d(16),
-            nn.ReLU()
-            )
-
-        for m in self.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        return self.encoder(x)
-
-mouth_encoder = MouthEncoder().to(device)
-
-class AudioEncoder(nn.Module):
-    def __init__(self):
-        super(AudioEncoder, self).__init__()
-
-        self.encoder = nn.Sequential(
-            nn.Linear(12, 32),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.Linear(32, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Linear(64, 16),
-            nn.BatchNorm1d(16),
-            nn.ReLU()
-            )
-
-        for m in self.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        return self.encoder(x)
-
-audio_encoder = AudioEncoder().to(device)
 
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
 
-        
         self.mouth_encoder = nn.Sequential(
             nn.Linear(40, 128),
             nn.BatchNorm1d(128),
@@ -202,15 +132,22 @@ class Discriminator(nn.Module):
             nn.Sigmoid()
             )
 
-    def forward(self, x_video, x_audio):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Linear):
+                torch.nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm1d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+                
+    def forward(self, video_input, audio_input):
+        x_video = self.mouth_encoder(video_input)
+        x_audio = self.audio_encoder(audio_input)
         x = torch.norm(x_video - x_audio, 2, dim = 1, keepdim = True)
         return self.linear(x)
 
 discriminator = Discriminator().to(device)
 
-encoders_params = list(mouth_encoder.parameters()) + list(audio_encoder.parameters()) + list(discriminator.parameters())
-# TO DO: Check for beta parameters for adam optimizer.
-encoders_optimizer = optim.Adam(encoders_params, lr=1e-3, betas=(0.5, 0.999))
+discriminator_optimizer = optim.Adam(discriminator.parameters(), lr=1e-3, betas=(0.5, 0.999))
 
 if __name__ == "__main__":
     main()
