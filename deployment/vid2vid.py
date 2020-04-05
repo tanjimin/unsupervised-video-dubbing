@@ -1,5 +1,6 @@
 import cv2
 import os
+import subprocess
 import numpy as np
 import torch
 import shutil
@@ -19,7 +20,7 @@ x_offset = x_center - half_side_length
 y_offset = y_center - half_side_length
 
 if not os.path.exists('deployment/vid2vid/datasets/'):
-	os.system('deployment/setup_vid2vid.sh')
+	os.system("deployment/setup_vid2vid.sh")
 
 landmark_dir = 'deployment/vid2vid/datasets/face/test_keypoints/0001/'
 shutil.rmtree(landmark_dir)
@@ -37,3 +38,12 @@ for file in os.listdir(source_image_dir):
 
 print('Images loaded.')
 
+print('Running Vid2Vid.')
+#os.system('deployment/run_vid2vid.sh')
+print('Vid2Vid finished')
+
+vid2vid_dir = 'deployment/vid2vid/results/edge2face_512/test_latest/0001'
+for file in sorted(os.listdir(vid2vid_dir)):
+	if 'fake_B' in file:
+		full_path = os.path.join(vid2vid_dir, file)
+		print(full_path)
