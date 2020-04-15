@@ -1,1 +1,4 @@
-theme: jekyll-theme-cayman
+theme: minima
+title: Unsupervised Video Dubbing
+author: Jimin Tan, Chenqing Yang, Yakun Wang, Yash Deshpande
+description: Project description
