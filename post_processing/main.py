@@ -1,0 +1,77 @@
+import argparse
+import cv2
+import dlib
+import torch
+import librosa
+import os
+import numpy as np
+import sys
+
+from models import FaceEncoder, AudioEncoder, FaceDecoder
+
+from torchvision.utils import make_grid
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
+
+from main_support import step_1_main, step_2_main, step_3_main
+# Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-r', '--run_step', type = int, help = 'Input 1 for running step1; 2 for step2; 3 for step3; 4 for step4 and etc.')
+args = parser.parse_args()
+
+int_step = args.run_step
+
+if int_step == 1:
+    assert sys.executable.split('/')[-3] == 'capstone_vir'
+
+    print('Step 1: Generating keypoints!')
+    print('Please input base video file path !')
+    base_video_file = input('===> ')
+    assert os.path.isfile(base_video_file)
+
+    print('Please input audio driver file path !')
+    audio_driver_file = input('===> ')
+    assert os.path.isfile(audio_driver_file)
+
+    print('Please input epoch !')
+    epoch = input('===> ')
+
+    step_1_main(base_video_file, audio_driver_file, epoch)
+    f = open("./result/source.txt","w+")
+    f.write('Base Video: {}'.format(base_video_file + '\n\n'))
+    f.write('Audio Driver: {}'.format(audio_driver_file+ '\n\n'))
+    f.write('Epoch: {}'.format(epoch))
+    f.close()
+    print('Step 1 Done!')
+
+if int_step == 2:
+    print('Step 2: Test Image!')
+    step2_load_keypoint = np.load('./result/keypoints_for_vis.npy')
+    step_2_main(step2_load_keypoint)
+    print('Step 2 Done!')
+
+if int_step == 3:
+    print('Step 3: Generate output!')
+
+    print("Please input image folder path ! If default, enter 'd'!")
+    image_path = input('===> ')
+
+    if image_path == 'd':
+        image_path = './result/keypoints_frames/'
+
+    
+    assert os.path.exists(image_path)
+    assert image_path.endswith('/')
+
+    print('Please input audio file path !')
+
+    audio_driver_path = input('===> ')
+    assert os.path.isfile(audio_driver_path)
+
+    shell_default = '/bin/zsh'
+    fps = 25.92002592002592
+    
+    step_3_main(shell_default, image_path, audio_driver_path, fps)
+
+    print('Step 3 Done!')
