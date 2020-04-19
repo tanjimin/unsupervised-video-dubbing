@@ -1,6 +1,6 @@
 # Post-Processing Stage
 
-##Requirement
+## Requirement
 
 - LibROSA 0.7.2 
 - dlib 19.19
@@ -12,7 +12,7 @@
 
 
 
-##Folder Structure
+## Folder Structure
 
 ```
 .
@@ -44,7 +44,7 @@
 - Usage: ```python3 main.py -r step  ```
   - e.g: `python3 main.py -r 1` will run the first step and etc 
 
-####Step 1 — generate landmarks
+#### Step 1 — generate landmarks
 
 - Input
   - Base video file path (`./source/base_video/base_video.mp4`)
