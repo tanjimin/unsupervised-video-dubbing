@@ -9,8 +9,8 @@ import glob as glob
 import os
 
 
-vid_list = sorted(glob.glob(os.path.join('/Users/leo/Desktop/Spring_2020/cleaned/auto_copypaste/vid2vid_frames', '*.jpg')))
-base_list = sorted(glob.glob(os.path.join('/Users/leo/Desktop/Spring_2020/cleaned/auto_copypaste/base_frames', '*.jpg')))
+vid_list = sorted(glob.glob(os.path.join('./vid2vid_frames', '*.jpg')))
+base_list = sorted(glob.glob(os.path.join('./base_frames', '*.jpg')))
 assert len(vid_list) == len(base_list)
 
 
