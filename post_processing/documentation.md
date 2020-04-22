@@ -37,9 +37,7 @@
 >
 > {C. Sagonas, E. Antonakos, G, Tzimiropoulos, S. Zafeiriou, M. Pantic. 300 faces In-the-wild challenge: Database and results. Image and Vision Computing (IMAVIS), Special Issue on Facial Landmark Localisation "In-The-Wild". 2016.}
 
-
-
-##Detailed steps for post processing
+## Detailed steps for post processing
 
 - Usage: ```python3 main.py -r step  ```
   - e.g: `python3 main.py -r 1` will run the first step and etc 
