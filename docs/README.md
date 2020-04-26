@@ -49,6 +49,8 @@ Our model adpoted an encoder-decoder design. We have two encoders for face and a
 
 The input to our model includes the audio MFCC features and face landmark coordinates excluding the mouth area (As shown in the figure above). The output is the mouth landmark that is conditioned on both the face(mouth location) and audio features(mouth open status). 
 
+In case that target audio signals are unavailable, we also build a character-level model where text inputs serve as an alternative of audio features. The major difference between the character encoder and the audio encoder is that the character-level text embeddings would be first up-sampled through a 1d transposed convolutional layer so that length of text context vector would match that of the frames.
+
 ## Model Training
 We trained this model with our pre-processed data which includes face landmarks and MFCC audio features.
 
@@ -72,3 +74,32 @@ The openness measurements(open level) mentioned above is defined as follows:
 <img src="assets/loss_function.pdf" alt="Reconstruction" style="zoom:100%;" align="middle"/>
 </div>  
 
+The final training pipeline consists of reconsruction and contrastive learning. We combine them into one loss function at the end:
+
+<div style="text-align: center;">
+<img src="assets/training_graph.pdf" alt="Training" style="zoom:100%;" align="middle"/>
+</div>  
+
+After we trained this model, we can map a face landmark with corresponding audio directly into a mouth landmark.
+
+## Post Processing
+
+We use Vid2Vid from NVIDIA to convert generated face (with mouth) landmarks to images in RGB space. Then, we dynamically cropped out the mouth area and paste it to original background image.
+
+<div style="text-align: center;">
+<img src="assets/post_processing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
+</div>  
+
+### Paste Smoothing 
+The pasted mouth image patch can have boarders around it that looks unnatural. We applied a around smoothing technique that we demonstrated below:
+
+<div style="text-align: center;">
+<img src="assets/smoothing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
+</div> 
+
+
+## Result
+
+This is a 10-second video of a person originally speaking Spanish but conditioned on English audio.
+
+<iframe src="https://drive.google.com/file/d/1tVfDd0cn6nh4w_KBQi8AXc8L8gQHuuhj/preview" width="640" height="480"></iframe>
