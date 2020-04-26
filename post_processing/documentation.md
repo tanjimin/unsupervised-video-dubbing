@@ -25,7 +25,9 @@
 ├── main.py									# main function for post processing
 ├── main_support.py					# support functions used in main.py
 ├── models.py								# define the landmark generation model
-├── compare_openness.ipynb	# mouth openness comparison across generated videos
+├── step_3_vid2vid.sh		  	# Bash script for running vid2vid
+├── step_4_denoise.sh.      # Bash script for denoising vid2vid results
+├── compare_openness.ipynb  # mouth openness comparison across generated videos
 └── README.md
 ```
 
@@ -69,7 +71,31 @@
   - Generate images from `npy` file
   - Generate openness plot
 
-#### Step 3 — Generate modified videos with sound
+#### Step 3 — Execute vid2vid
+
+- Input
+  - None
+- Output
+  - Path for generated fake images from vid2vid are shown at the end; Please copy it back to the `/result/vid2vid_frames/`
+    - Folder: vid2vid generated images
+- Process
+  - Run vid2vid
+  - Copy back vid2vid results to main folder
+
+#### Step 4 — Denoise and smooth vid2vid results
+
+- Input
+  - vid2vid generated images folder path
+  - Original base images folder path
+- Output
+  - Folder: Modified images (base image + vid2vid mouth regions)
+  - Folder: Denoised and smoothed frames
+- Process
+  - Crop mouth areas from vid2vid generated images and paste them back to base images —> modified image
+  - Generate circular smoothed images by using gradient masking 
+  - Take `(modified image, circular smoothed images)` as pairs and do denoising
+
+#### Step 5 — Generate modified videos with sound
 
 - Input
   - Saved frames folder path

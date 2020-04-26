@@ -292,11 +292,131 @@ def step_2_main(keypoint):
     plt.ylim(0, 15)
     plt.savefig('./result/openness.png')
 
+# #############################################################
+# ## Step 3 vid2vid
+# #############################################################
+
+# step_3_vid2vid.sh
 
 # #############################################################
-# ## Step 3 generate output
+# ## Step 4 smooth output
 # #############################################################
-def step_3_main(shell_default, image_path, audio_driver_path, fps):
+
+def auto_copy_paste(vid_list, base_list):
+
+    for vid_img, base_img in zip(vid_list, base_list):
+        # ===========================================================================
+        # Vid Image
+        # ===========================================================================
+        # (512, 512, 3)
+        vid_frames = np.array(cv2.imread(vid_img)[...,::-1])
+        filename = vid_img.split('/')[-1]
+        
+        # (68, 2)
+        vid_keys = detect_keypoints(vid_frames, filename)
+        
+        # for each frame, get mouth(up,down,left,right) coordinates
+        left_most = 49 - 1
+        right_most = 55 - 1 
+        # bottom = max(49, 55 ~ 60) --- 48, range(54, 59+1)
+        # top = min (49 ~ 55) --- range(48, 54+1)
+        
+        # face[left, right, bottom, top]
+        face_rect = [6 - 1, 12 - 1, 9 - 1, 3 - 1]
+        # get face rect region
+        vid_face_rect_l = vid_keys[face_rect[0]][0]
+        vid_face_rect_r = vid_keys[face_rect[1]][0]
+        vid_face_rect_b = vid_keys[face_rect[2]][1]
+        vid_face_rect_t = vid_keys[face_rect[3]][1]
+        vid_face_rect_width = vid_face_rect_r - vid_face_rect_l
+        vid_face_rect_height = vid_face_rect_b - vid_face_rect_t
+        
+        vid_left_most_coor = (vid_keys[left_most][0] - vid_face_rect_l) / vid_face_rect_width
+        vid_right_most_coor = (vid_keys[right_most][0] - vid_face_rect_l) / vid_face_rect_width
+        bottom_corr_1 = [vid_keys[i][1] for i in range(54,60)]
+        bottom_corr_1.append(vid_keys[48][1])
+        vid_bottom_corr = (max(bottom_corr_1) - vid_face_rect_t) / vid_face_rect_height
+        vid_top_corr = (min([vid_keys[i][1] for i in range(48,55)]) - vid_face_rect_t) / vid_face_rect_height
+        
+        # ===========================================================================
+        # Base Frame
+        # ===========================================================================
+        base_frame = np.array(cv2.imread(base_img)[...,::-1])
+        filename = base_img.split('/')[-1]
+        
+        base_keys = detect_keypoints(base_frame, filename)
+        
+        # get face rect region
+        base_face_rect_l = base_keys[face_rect[0]][0]
+        base_face_rect_r = base_keys[face_rect[1]][0]
+        base_face_rect_b = base_keys[face_rect[2]][1]
+        base_face_rect_t = base_keys[face_rect[3]][1]
+        base_face_rect_width = base_face_rect_r - base_face_rect_l
+        base_face_rect_height = base_face_rect_b - base_face_rect_t
+        
+        base_left_most_coor = (base_keys[left_most][0] - base_face_rect_l) / base_face_rect_width
+        base_right_most_coor = (base_keys[right_most][0] - base_face_rect_l) / base_face_rect_width
+        bottom_corr_11 = [base_keys[i][1] for i in range(54,60)]
+        bottom_corr_11.append(base_keys[48][1])
+        base_bottom_corr = (max(bottom_corr_11) - base_face_rect_t) / base_face_rect_height
+        base_top_corr = (min([base_keys[i][1] for i in range(48,55)])  - base_face_rect_t)/ base_face_rect_height
+        
+        # ===========================================================================
+        # Compare normalized coordinates
+        # ===========================================================================
+        buffer = 0.1
+        left_most_corr = min(vid_left_most_coor, base_left_most_coor) * (1 - buffer)
+        right_most_corr = max(vid_right_most_coor, base_right_most_coor) * (1 + buffer)
+        bottom_most_corr = max(vid_bottom_corr, base_bottom_corr) * (1 + buffer)
+        top_most_corr = min(vid_top_corr, base_top_corr) * (1 - buffer)
+        
+        # vid regions
+        vid_l = int(left_most_corr * vid_face_rect_width) + vid_face_rect_l
+        vid_r = int(right_most_corr * vid_face_rect_width) + vid_face_rect_l
+        vid_b = int(bottom_most_corr * vid_face_rect_height) + vid_face_rect_t
+        vid_t = int(top_most_corr * vid_face_rect_height) + vid_face_rect_t
+        vid_cropped = vid_frames[vid_t:vid_b, vid_l:vid_r]
+        
+        base_l = int(left_most_corr * base_face_rect_width) + base_face_rect_l
+        base_r = int(right_most_corr * base_face_rect_width) + base_face_rect_l
+        base_b = int(bottom_most_corr * base_face_rect_height) + base_face_rect_t
+        base_t = int(top_most_corr * base_face_rect_height) + base_face_rect_t
+        
+        # calculate dim for resizing
+        base_y = base_b - base_t
+        base_x = base_r - base_l
+
+        # get the corresponding cropped frames
+        frame_to_append_resize = cv2.resize(vid_cropped, dsize=(base_x, base_y), interpolation=cv2.INTER_LINEAR) 
+        
+        base_frame[base_t:base_b, base_l:base_r] = frame_to_append_resize
+    #     plt.imshow(base_frame)
+    #     plt.show()
+        
+        if not os.path.exists('./result/modified_frames'):
+            os.mkdir('./result/modified_frames')
+            
+        cv2.imwrite(os.path.join('./result/modified_frames', filename), base_frame[...,::-1])
+        
+        print(filename, 'processed!')
+        print('Modified images are saved at ./result/modified_frames/')
+
+def step_4_main(fake_image_path, orig_image_path, shell_default):
+    vid_list = sorted(glob.glob(os.path.join(fake_image_path, '*.jpg')))
+    base_list = sorted(glob.glob(os.path.join(orig_image_path, '*.jpg')))
+    assert len(vid_list) == len(base_list)
+    
+    auto_copy_paste(vid_list, base_list)
+    
+    cmd_denoise = 'bash step_4_denoise.sh'
+    shell = shell_default
+    subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+
+
+# #############################################################
+# ## Step 5 generate output
+# #############################################################
+def step_5_main(shell_default, image_path, audio_driver_path, fps):
     if not os.path.exists(image_path):
         print('Image path does not exists!')
         return
@@ -365,8 +485,6 @@ def combine_audio_video(image_path, shell_default):
 
 
     
-
-
 
 
 # #############################################################
