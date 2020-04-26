@@ -159,12 +159,13 @@ def append_frame_to_base(video_base_path, video_append_frames_path,
 # noisy_dir = "/beegfs/yd1282/modified_frames/"
 noisy_dir = rect_frames_path
 
-ground_orig_dir = "/beegfs/yd1282/original_frames/"
+# ground_orig_dir = "/beegfs/yd1282/original_frames/"
+ground_orig_dir = "../result/base_frames/"
 
-if not os.path.exists("/beegfs/yd1282/circular_smoothed_frames/"):
-    append_frame_to_base(ground_orig_dir, "../vid2vid_out/", 
+if not os.path.exists("../result/circular_smoothed_frames/"):
+    append_frame_to_base(ground_orig_dir, "../result/vid2vid_frames/", 
                          append_corr, base_mouth_corr, 
-                         resize_ratio, folder_name = "/beegfs/yd1282/circular_smoothed_frames/")
+                         resize_ratio, folder_name = "../result/circular_frames/")
 
 # orig_dir = "/beegfs/yd1282/circular_smoothed_frames/"
 orig_dir = circular_frames_path
