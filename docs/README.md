@@ -102,4 +102,6 @@ The pasted mouth image patch can have boarders around it that looks unnatural. W
 
 This is a 10-second video of a person originally speaking Spanish but conditioned on English audio.
 
-<iframe src="https://drive.google.com/file/d/1tVfDd0cn6nh4w_KBQi8AXc8L8gQHuuhj/preview" width="640" height="480"></iframe>
+<div style="text-align: center;">
+<iframe src="https://drive.google.com/file/d/1tVfDd0cn6nh4w_KBQi8AXc8L8gQHuuhj/preview" width="960" height="540"></iframe>
+</div>  
