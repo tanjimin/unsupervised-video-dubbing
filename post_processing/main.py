@@ -66,7 +66,11 @@ if int_step == 2:
 
 if int_step == 3:
     print('Step 3: Executing Vid2Vid')
-    os.system('step_3_vid2vid.sh')
+
+    cmd_denoise = 'bash step_3_vid2vid.sh'
+    shell = shell_default
+    subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+    
     print('Please copy back generated images to /result/vid2vid_frames/')
 
 # ########################################
