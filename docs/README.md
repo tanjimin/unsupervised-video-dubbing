@@ -86,7 +86,7 @@ The openness measurements(open level) mentioned above is defined as follows:
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/loss_function.pdf" alt="Open level function" style="zoom:100%;" align="middle"/>
+<img src="assets/loss_function.pdf" alt="Open level function" style="zoom:80%;" align="middle"/>
 <figcaption>Figure 6: Open level function</figcaption>
 </figure>
 </div>  
@@ -120,7 +120,7 @@ The pasted mouth image patch can have borders around it that look unnatural. In 
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/smoothing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
+<img src="assets/smoothing.pdf" alt="Post processing" style="zoom:60%;" align="middle"/>
 <figcaption>Figure 9: Mouth edge smoothing</figcaption>
 </figure>
 </div> 
