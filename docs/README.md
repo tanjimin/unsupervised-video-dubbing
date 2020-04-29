@@ -102,15 +102,15 @@ At this stage, for each frame in the video, we have two versions of the output -
 The results of all three smoothing stages are shown below:
 
 <div style="text-align: center;">
-<img src="assets/rect_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+<img src="assets/rect_frame.png" alt="(1) Rectangular crop-paste" style="zoom:100%;" align="middle"/>
 </div>  
 
 <div style="text-align: center;">
-<img src="assets/circ_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+<img src="assets/circ_frame.png" alt="(2) Circular smoothed crop-paste" style="zoom:100%;" align="middle"/>
 </div>  
 
 <div style="text-align: center;">
-<img src="assets/final_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+<img src="assets/final_frame.png" alt="(3) Deep Image Prior smoothing" style="zoom:100%;" align="middle"/>
 </div>  
 
 
