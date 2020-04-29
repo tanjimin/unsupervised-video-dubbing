@@ -6,18 +6,17 @@ Authors: Jimin Tan, Chenqin Yang, Yakun Wang, Yash Deshpande
 Project Advisor:  Prof. Kyunghyun Cho
 
 ## Introduction
-We tackle the problem of generative video dubbing by modi-fying a video of a person speaking in one language so thatthe person is perceived as speaking the same content in an-other language.
+We tackle the problem of generative video dubbing by modifying a video of a person speaking in one language so that the person is perceived as speaking the same content in another language.
 
 **The goal of the project is to transform a video of a person speaking in one language so that it looks like the person is speaking the same content in another language.**
-Given a video clip of a person reading a news article in language *S*, our model must produce a video clip of the same person reading the same news article however in language *T*.
+Given a video clip of a person reading a news article in language *S*, our model produces a video clip of the same person reading the same news article however in language *T*.
 
-Some of the benefit of solving this problem in the news cast area includes:
+In the media domain, a robust solution to this problem ensures:
 - Fast, real-time translation of video broadcast content
 - Detection of maliciously altered video content
 
-
 ## Video Processing Pipeline
-In this project, we propose a solution that is different from GANs to this generative problem. Notice that the core of this problem is to generate a series of mouth movements that is conditioned on the audio input and generating RGB pixels is not a crucial part of this task. Thus, we re-formulate this image generation problem to a regression problem by converting face RGB images to face landmark coordinates with the Dlib face recognition library. Then we only need to spend compuatation powers to generate mouth coordinates instead of pixel values. The abstraction from RGB pixels to coordinates simplifies the computation complexity by a large margin. Then the landmark to face process is out sourced to the Vid2Vid model from NVIDIA. Here we show a general pipeline for our solution.
+Altough this task is gennerative in nature, we propose a novel solution that is different from traditional Generative Adversarial Networks (GANs). Notice that the core of this problem is to generate a series of mouth movements that is conditioned on the audio input -- generating RGB pixels is not a crucial part of this task. Thus, we re-formulate this image generation problem into a regression problem by converting RGB facial images to face landmark coordinates using the Dlib face recognition library. It becomes much more computatinally efficient to generate mouth coordinates than pixel values. The abstraction from RGB pixels to coordinates also simplifies the computational complexity by a large margin. The landmark-to-face generation process is outsourced to the Vid2Vid model from NVIDIA. Here we show a general pipeline for our solution.
 
 <div style="text-align: center;">
 <img src="assets/overall_structure.pdf" alt="Model structure" style="zoom:100%;" align="middle"/>
@@ -34,28 +33,28 @@ In this project, we propose a solution that is different from GANs to this gener
 	- **Bloomberg newscast video** (Internal Evaluation Dataset)
 
 ### Data Preprocessing
-Since we re-formulated the problem to a regression problem, we need to transform the dataset to face landmarks using Dlib. We also transformed raw audio signals to MFCC features with the LibROSA library. The processed data is save in npz format.
+Since we re-formulate the problem to be a regression problem, we need to transform the dataset to face landmarks using Dlib. We also transform raw audio signals to MFCC features using the LibROSA library. The processed data is saved in `.npz` format.
 
 <div style="text-align: center;">
 <img src="assets/data_processing.pdf" alt="Data pre-processing" style="zoom:100%;" align="middle"/>
 </div>  
 
 ## Model Strcuture
-Our model adpoted an encoder-decoder design. We have two encoders for face and audio inputs respectively. The model output the landmark coordinates of the mouth area. All encoders and decoders consists of 3 feed-forward layers.
+Our model adpots an encoder-decoder design. We have two encoders for face and audio inputs respectively. The model outputs the landmark coordinates of the mouth area. All encoders and decoders consists of 3 feed-forward layers.
 
 <div style="text-align: center;">
 <img src="assets/model.pdf" alt="Model structure" style="zoom:100%;" align="middle"/>
 </div>  
 
-The input to our model includes the audio MFCC features and face landmark coordinates excluding the mouth area (As shown in the figure above). The output is the mouth landmark that is conditioned on both the face(mouth location) and audio features(mouth open status). 
+The input to our model includes the audio MFCC features and face landmark coordinates excluding the mouth area (as shown in the figure above). The output is the mouth landmark that is conditioned on both the face (mouth location) and audio features (mouth open status). 
 
-In case that target audio signals are unavailable, we also build a character-level model where text inputs serve as an alternative of audio features. The major difference between the character encoder and the audio encoder is that the character-level text embeddings would be first up-sampled through a 1d transposed convolutional layer so that length of text context vector would match that of the frames.
+In the case where target audio signals are unavailable, we also build a character-level model where text inputs serve as an alternative of audio features. The major difference between the character encoder and the audio encoder is that the character-level text embeddings are first up-sampled through a 1d transposed convolutional layer so that length of the text context vector matches that of the frames.
 
 ## Model Training
-We trained this model with our pre-processed data which includes face landmarks and MFCC audio features.
+We train this model with our pre-processed data (as described above), which includes face landmarks and MFCC audio features.
 
 ### Reconstruction Loss
-Since we have the ground truth mouth landmark, the first part of the training is to train the network to align the mouth with ground truth given the two conditionals. We used MSE as the loss function for reconstruction.
+Since we have the ground truth mouth landmark, the first part of the training is to train the network to align the mouth with ground truth given the two conditionals. We use MSE as the loss function for reconstruction.
 
 <div style="text-align: center;">
 <img src="assets/reconstruction.pdf" alt="Reconstruction" style="zoom:100%;" align="middle"/>
@@ -84,18 +83,35 @@ After we trained this model, we can map a face landmark with corresponding audio
 
 ## Post Processing
 
-We use Vid2Vid from NVIDIA to convert generated face (with mouth) landmarks to images in RGB space. Then, we dynamically cropped out the mouth area and paste it to original background image.
+We use Vid2Vid from NVIDIA to convert generated face (with mouth) landmarks to images in the RGB space. Then, we dynamically crop out the mouth area and paste it onto original background image (rectangular crop).
 
 <div style="text-align: center;">
 <img src="assets/post_processing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
 </div>  
 
 ### Paste Smoothing 
-The pasted mouth image patch can have boarders around it that looks unnatural. We applied a around smoothing technique that we demonstrated below:
+
+The pasted mouth image patch can have borders around it that look unnatural. In addition to the rectangular crop-and-paste above, we apply a circular smoothing technique as shown below.
 
 <div style="text-align: center;">
 <img src="assets/smoothing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
 </div> 
+
+At this stage, for each frame in the video, we have two versions of the output -- (1) rectangular crop-and-paste, and (2) circular filter smoothed paste. For each pair, we use the denoising method described by Ulyanov et al. in their paper Deep Image Prior, which makes use of an _untrained_ ConvNet that extracts good priors of images. 
+
+The results of all three smoothing stages are shown below:
+
+<div style="text-align: center;">
+<img src="assets/rect_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+</div>  
+
+<div style="text-align: center;">
+<img src="assets/circ_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+</div>  
+
+<div style="text-align: center;">
+<img src="assets/final_frame.png" alt="Post processing" style="zoom:100%;" align="middle"/>
+</div>  
 
 
 ## Result
