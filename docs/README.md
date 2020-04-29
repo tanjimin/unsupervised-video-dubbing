@@ -89,6 +89,7 @@ We use Vid2Vid from NVIDIA to convert generated face (with mouth) landmarks to i
 <img src="assets/post_processing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
 </div>  
 
+
 ### Paste Smoothing 
 
 The pasted mouth image patch can have borders around it that look unnatural. In addition to the rectangular crop-and-paste above, we apply a circular smoothing technique as shown below.
@@ -102,7 +103,11 @@ At this stage, for each frame in the video, we have two versions of the output -
 The results of all three smoothing stages are shown below:
 
 <div style="text-align: left;">
-<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=480 height=270/>
+<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135/>
+</div> <div style="text-align: center;">
+<img src="assets/circ_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135/>
+</div> <div style="text-align: right;">
+<img src="assets/final_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135/>
 </div> 
 
 ## Result
