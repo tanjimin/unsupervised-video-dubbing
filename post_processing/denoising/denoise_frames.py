@@ -55,117 +55,12 @@ args = parser.parse_args()
 
 rect_frames_path = args.rect_frames
 circular_frames_path = args.circular_frames
-
-append_center_y = 310
-append_center_x = 265
-append_length = 70
-
-#base_mouth_center_y = 430
-#base_mouth_center_x = 930
-#base_mouth_length = 100
-
-base_mouth_center_y = 435
-base_mouth_center_x = 925
-base_mouth_length = 105
-
-resize_ratio = base_mouth_length / float(append_length)
-
-append_corr = [append_center_y - append_length, append_center_y + append_length, \
-               append_center_x - append_length, append_center_x + append_length]
-
-base_mouth_corr = [base_mouth_center_y - base_mouth_length, base_mouth_center_y + base_mouth_length, \
-                   base_mouth_center_x - base_mouth_length, base_mouth_center_x + base_mouth_length]
-
-
-def append_frame_to_base(video_base_path, video_append_frames_path, 
-                         append_corr, base_mouth_corr, resize_ratio, folder_name):
-    
-    '''
-    append_corr = [append_y1, append_y2, append_x1, append_x2]
-    base_mouth_corr = [base_mouth_y1, base_mouth_y2, base_mouth_x1, base_mouth_x2]
-    '''
-    
-    append_y1 = append_corr[0]
-    append_y2 = append_corr[1]
-    append_x1 = append_corr[2]
-    append_x2 = append_corr[3]
-    
-    base_mouth_y1 = base_mouth_corr[0]
-    base_mouth_y2 = base_mouth_corr[1]
-    base_mouth_x1 = base_mouth_corr[2]
-    base_mouth_x2 = base_mouth_corr[3]
-
-    file_list = sorted(os.listdir(video_append_frames_path))
-    file_list = [i for i in file_list if i != '.DS_Store']
-    video_append_frames = []
-    video_base = []
-    video_base_list = os.listdir(video_base_path)
-    video_base_list.sort()
-    video_base_list = video_base_list[2:]
-    
-    for file in file_list:
-#         print("File: {}".format(file[16:]))
-#         frames = skvideo.io.vread(os.path.join(video_append_frames_path, file))
-        frames = cv2.imread(os.path.join(video_append_frames_path, file))[...,::-1]
-        video_append_frames.append(frames)
-
-        video_to_append = np.array(video_append_frames)[:, append_y1:append_y2, append_x1:append_x2, :]
-        # video_to_append: (84, 140, 140, 3)
-        
-        video_to_append_center_y = video_to_append_center_x = video_to_append_radius = 1/2 * video_to_append.shape[-2]
-        mask = np.zeros(video_to_append.shape)
-        threshold = int(video_to_append_radius)
-        
-        for x in range(int(video_to_append_radius) * 2):
-            for y in range(int(video_to_append_radius) * 2):
-                distance = (video_to_append_center_y - y) ** 2 +  (video_to_append_center_x - x) ** 2
-                alpha = (1 - distance/(threshold ** 2)) * 3
-                mask[:, x, y, :] = max(min(1, alpha), 0)
-
-        video_base_frame = cv2.imread(os.path.join(video_base_path, 'frame'+file[17:]))[...,::-1]
-        video_base.append(video_base_frame)
-    
-    video_base = np.array(video_base)
-    
-#     video_base = [to_tensor(Image.open(os.path.join(video_base_path, k))) for k in video_base_list if k != '.DS_Store']
-#     video_base = torch.stack(video_base)
-    # skvideo.io.vread(video_base_path)[2:-10, :]
-    
-#     print("V2A type: {}".format(type(video_to_append)))
-#     print("VB type: {}".format(type(video_base)))
-    assert video_to_append.shape[0] == video_base.shape[0]
-    if not os.path.exists('./results'):
-        os.mkdir('./results')
-    
-    dimension = (base_mouth_x2 - base_mouth_x1, base_mouth_y2 - base_mouth_y1)
-    mask_resize = cv2.resize(mask[0], dsize=dimension, interpolation=cv2.INTER_LINEAR)
-    target_mask = 1 - mask_resize
-
-    for i in range(video_to_append.shape[0]):
-
-        frame_to_append_resize = cv2.resize(video_to_append[i], \
-                                            dsize=dimension, \
-                                            interpolation=cv2.INTER_LINEAR) 
-        
-        video_base[i, base_mouth_y1:base_mouth_y2, base_mouth_x1:base_mouth_x2,:] = frame_to_append_resize * mask_resize + \
-        video_base[i, base_mouth_y1:base_mouth_y2, base_mouth_x1:base_mouth_x2,:] * target_mask
-        
-
-        filename = 'frame{:05d}.png'.format(i)
-        if not os.path.exists(folder_name):
-            os.mkdir(folder_name)
-        cv2.imwrite(os.path.join(folder_name, filename), video_base[i][...,::-1])
         
 # noisy_dir = "/beegfs/yd1282/modified_frames/"
 noisy_dir = rect_frames_path
 
 # ground_orig_dir = "/beegfs/yd1282/original_frames/"
 ground_orig_dir = "../result/base_frames/"
-
-if not os.path.exists("../result/circular_smoothed_frames/"):
-    append_frame_to_base(ground_orig_dir, "../result/vid2vid_frames/", 
-                         append_corr, base_mouth_corr, 
-                         resize_ratio, folder_name = "../result/circular_frames/")
 
 # orig_dir = "/beegfs/yd1282/circular_smoothed_frames/"
 orig_dir = circular_frames_path
