@@ -100,18 +100,7 @@ The pasted mouth image patch can have borders around it that look unnatural. In 
 At this stage, for each frame in the video, we have two versions of the output -- (1) rectangular crop-and-paste, and (2) circular filter smoothed paste. For each pair, we use the denoising method described by Ulyanov et al. in their paper Deep Image Prior, which makes use of an _untrained_ ConvNet that extracts good priors of images. 
 
 The results of all three smoothing stages are shown below:
-
-<div style="text-align: center;">
-<img src="assets/rect_frame.png" alt="(1) Rectangular crop-paste" style="zoom:100%;" align="middle"/>
-</div>  
-
-<div style="text-align: center;">
-<img src="assets/circ_frame.png" alt="(2) Circular smoothed crop-paste" style="zoom:100%;" align="middle"/>
-</div>  
-
-<div style="text-align: center;">
-<img src="assets/final_frame.png" alt="(3) Deep Image Prior smoothing" style="zoom:100%;" align="middle"/>
-</div>  
+![rect-frame](assets/rect_frame.png "Rectangular crop-paste") ![circ-frame](assets/circ_frame.png "Circular smoothing filter") ![final-frame](assets/final_frame.png "Final smoothed output") 
 
 
 ## Result
