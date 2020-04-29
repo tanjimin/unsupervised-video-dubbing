@@ -11,6 +11,7 @@ from torchvision.utils import make_grid
 from PIL import Image
 
 from models import FaceEncoder, AudioEncoder, FaceDecoder
+from denoise_frames import DIP_denoise
 
 # #############################################################
 # ## Step 1
@@ -434,13 +435,24 @@ def auto_copy_paste(vid_list, base_list):
             os.mkdir('./result/modified_frames')
         if not os.path.exists('./result/circular_frames'):
             os.mkdir('./result/circular_frames')    
-            
-        cv2.imwrite(os.path.join('./result/modified_frames', filename), base_frame[...,::-1])
-        cv2.imwrite(os.path.join('./result/circular_frames', filename), base_frame_circular[...,::-1])
+        if not os.path.exists('./result/smoothed_frames'):
+            os.mkdir('./result/smoothed_frames')
+
+        rect_frame_path = os.path.join('./result/modified_frames', filename)
+        circular_frame_path = os.path.join('./result/circular_frames', filename)     
+        smoothed_frame_path = os.path.join('./result/smoothed_frames', filename)
+
+        cv2.imwrite(rect_frame_path, base_frame[...,::-1])
+        cv2.imwrite(circular_frame_path, base_frame_circular[...,::-1])
+
+
+        DIP_denoise(rect_frame_path, circular_frame_path, smoothed_frame_path, \
+                    base_center_x, base_center_x)
         
         print(filename, 'processed!')
     print('Modified images are saved at ./result/modified_frames/')
     print('Circular images are saved at ./result/circular_frames/')
+    print('Smoothed images are saved at ./result/circular_frames/')
 
 def step_4_main(fake_image_path, orig_image_path, shell_default):
     vid_list = sorted(glob.glob(os.path.join(fake_image_path, '*.jpg')))
