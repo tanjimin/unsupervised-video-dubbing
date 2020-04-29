@@ -4,6 +4,7 @@ import dlib
 import torch
 import librosa
 import os
+import subprocess
 import numpy as np
 import sys
 
@@ -69,7 +70,11 @@ if int_step == 3:
 
     cmd_denoise = 'bash step_3_vid2vid.sh'
     shell = shell_default
-    subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+    # subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+    subprocess.call([shell, '-c', cmd_denoise])
+
+    if not os.path.exists('./result/vid2vid_frames'):
+        os.mkdir('./result/vid2vid_frames')
     
     print('Please copy back generated images to /result/vid2vid_frames/')
 
@@ -78,7 +83,7 @@ if int_step == 3:
 # ########################################
 
 if int_step == 4:
-    print('Step 4: Smoothing Vid2Vid output')
+    print('Step 4: Smoothing vid2vid output')
 
     print("Please input Vid2Vid image folder path ! If default, enter 'd'!")
     vid2vid_path = input('===> ')

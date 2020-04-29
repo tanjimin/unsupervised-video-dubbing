@@ -4,7 +4,6 @@ import torch
 import librosa
 import os
 import subprocess
-import skvideo.io
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
@@ -342,6 +341,7 @@ def auto_copy_paste(vid_list, base_list):
         # Base Frame
         # ===========================================================================
         base_frame = np.array(cv2.imread(base_img)[...,::-1])
+        base_frame_circular = np.array(cv2.imread(base_img)[...,::-1])
         filename = base_img.split('/')[-1]
         
         base_keys = detect_keypoints(base_frame, filename)
@@ -376,41 +376,86 @@ def auto_copy_paste(vid_list, base_list):
         vid_b = int(bottom_most_corr * vid_face_rect_height) + vid_face_rect_t
         vid_t = int(top_most_corr * vid_face_rect_height) + vid_face_rect_t
         vid_cropped = vid_frames[vid_t:vid_b, vid_l:vid_r]
+
+        # vid regions for circular cropping
+        vid_center_x = int((vid_r - vid_l) / 2 + vid_l)
+        vid_center_y = int((vid_b - vid_t) / 2 + vid_t) + 5
+        vid_half_length = int(max(vid_r - vid_l, vid_b - vid_t) / 2)
+        vid_cropped_circular = vid_frames[vid_center_y - vid_half_length:vid_center_y + vid_half_length, \
+                                          vid_center_x - vid_half_length:vid_center_x + vid_half_length]
+
+        # create circular mask
+        video_to_append_center_y = video_to_append_center_x = video_to_append_radius = 1/2 * vid_cropped_circular.shape[-2]
+        mask = np.zeros(vid_cropped_circular.shape)
+        threshold = int(video_to_append_radius)
+        
+        for x in range(int(video_to_append_radius) * 2):
+            for y in range(int(video_to_append_radius) * 2):
+                distance = (video_to_append_center_y - y) ** 2 +  (video_to_append_center_x - x) ** 2
+                alpha = (1 - distance/(threshold ** 2)) * 3
+                mask[x, y, :] = max(min(1, alpha), 0)                               
         
         base_l = int(left_most_corr * base_face_rect_width) + base_face_rect_l
         base_r = int(right_most_corr * base_face_rect_width) + base_face_rect_l
         base_b = int(bottom_most_corr * base_face_rect_height) + base_face_rect_t
         base_t = int(top_most_corr * base_face_rect_height) + base_face_rect_t
+
+        # base regions for circular cropping
+        base_center_x = int((base_r - base_l) / 2 + base_l)
+        base_center_y = int((base_b - base_t) / 2 + base_t) + 5
+        base_half_length = int(max(base_r - base_l, base_b - base_t) / 2)
+        base_y1 = base_center_y - base_half_length
+        base_y2 = base_center_y + base_half_length
+        base_x1 = base_center_x - base_half_length
+        base_x2 = base_center_x + base_half_length
+        base_cropped = base_frame_circular[base_y1:base_y2, base_x1:base_x2]
         
         # calculate dim for resizing
         base_y = base_b - base_t
         base_x = base_r - base_l
+        dimension_circular = (base_half_length * 2, base_half_length * 2)
+
+        # resize circular mask
+        mask_resize = cv2.resize(mask, dsize=dimension_circular, interpolation=cv2.INTER_LINEAR)
+        target_mask = 1 - mask_resize
 
         # get the corresponding cropped frames
-        frame_to_append_resize = cv2.resize(vid_cropped, dsize=(base_x, base_y), interpolation=cv2.INTER_LINEAR) 
+        frame_to_append_resize = cv2.resize(vid_cropped, dsize=(base_x, base_y), interpolation=cv2.INTER_LINEAR)
+        frame_to_append_resize_circular = cv2.resize(vid_cropped_circular, dsize=dimension_circular, interpolation=cv2.INTER_LINEAR)  
         
         base_frame[base_t:base_b, base_l:base_r] = frame_to_append_resize
+
+        base_frame_circular[base_y1:base_y2, base_x1:base_x2,:] = frame_to_append_resize_circular * mask_resize + \
+                                                                  base_frame_circular[base_y1:base_y2, base_x1:base_x2,:] * target_mask
     #     plt.imshow(base_frame)
     #     plt.show()
         
         if not os.path.exists('./result/modified_frames'):
             os.mkdir('./result/modified_frames')
+        if not os.path.exists('./result/circular_frames'):
+            os.mkdir('./result/circular_frames')    
             
         cv2.imwrite(os.path.join('./result/modified_frames', filename), base_frame[...,::-1])
+        cv2.imwrite(os.path.join('./result/circular_frames', filename), base_frame_circular[...,::-1])
         
         print(filename, 'processed!')
-        print('Modified images are saved at ./result/modified_frames/')
+    print('Modified images are saved at ./result/modified_frames/')
+    print('Circular images are saved at ./result/circular_frames/')
 
 def step_4_main(fake_image_path, orig_image_path, shell_default):
     vid_list = sorted(glob.glob(os.path.join(fake_image_path, '*.jpg')))
-    base_list = sorted(glob.glob(os.path.join(orig_image_path, '*.jpg')))
+    # vid2vid will omit first 2 images
+    base_list = sorted(glob.glob(os.path.join(orig_image_path, '*.png')))[2:]
     assert len(vid_list) == len(base_list)
     
+    # auto-copypaste for rectangular and circular area
     auto_copy_paste(vid_list, base_list)
     
+    # smooth and denoise
     cmd_denoise = 'bash step_4_denoise.sh'
     shell = shell_default
-    subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+    # subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
+    subprocess.call([shell, '-c', cmd_denoise])
 
 
 # #############################################################
