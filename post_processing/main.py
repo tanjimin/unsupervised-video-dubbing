@@ -15,7 +15,7 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
-from main_support import step_1_main, step_2_main, step_4_main
+from main_support import step_1_main, step_2_main, step_4_main, step_5_main
 # Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--run_step', type = int, help = 'Input 1 for running step1; 2 for step2; 3 for step3; 4 for step4 and etc.')
@@ -107,8 +107,10 @@ if int_step == 4:
 if int_step == 5:
     print('Step 5: Generate output!')
 
-    print("Please input modified image folder path!")
+    print("Please input smoothed image folder path! If default, enter 'd'!")
     image_path = input('===> ')
+    if image_path == 'd':
+        image_path = './result/smoothed_frames/'
     
     assert os.path.exists(image_path)
     assert image_path.endswith('/')

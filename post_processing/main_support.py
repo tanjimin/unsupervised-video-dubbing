@@ -302,7 +302,7 @@ def step_2_main(keypoint):
 # ## Step 4 smooth output
 # #############################################################
 
-def auto_copy_paste(vid_list, base_list):
+def auto_copypaste_smooth(vid_list, base_list):
 
     for vid_img, base_img in zip(vid_list, base_list):
         # ===========================================================================
@@ -447,7 +447,7 @@ def auto_copy_paste(vid_list, base_list):
 
 
         DIP_denoise(rect_frame_path, circular_frame_path, smoothed_frame_path, \
-                    base_center_x, base_center_x)
+                    base_center_x, base_center_y)
         
         print(filename, 'processed!')
     print('Modified images are saved at ./result/modified_frames/')
@@ -461,14 +461,8 @@ def step_4_main(fake_image_path, orig_image_path, shell_default):
     assert len(vid_list) == len(base_list)
     
     # auto-copypaste for rectangular and circular area
-    auto_copy_paste(vid_list, base_list)
+    auto_copypaste_smooth(vid_list, base_list)
     
-    # smooth and denoise
-    cmd_denoise = 'bash step_4_denoise.sh'
-    shell = shell_default
-    # subprocess.call([shell, '-c', cmd_denoise], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
-    subprocess.call([shell, '-c', cmd_denoise])
-
 
 # #############################################################
 # ## Step 5 generate output
@@ -481,10 +475,6 @@ def step_5_main(shell_default, image_path, audio_driver_path, fps):
     if not os.path.isfile(audio_driver_path):
         print('Audio file does not exists!')
         return
-
-
-    if not os.path.exists(os.path.join(image_path, 'result')):
-        os.mkdir(os.path.join(image_path, 'result'))
     
     make_video_from_frames(image_path, fps, shell_default)
     print('Video without audio is created!')
@@ -508,8 +498,8 @@ def make_video_from_frames(image_path, fps, shell_default):
     # skvideo.io.vwrite(os.path.join(image_path, './result/video_without_audio.mp4'), videos)
 
     # ffmpeg -framerate 25.92002592002592 -i frame%05d.png -pix_fmt yuv420p video_without_audio.mp4
-    image = image_path + 'vis_%05d.png'
-    save_loc = os.path.join(image_path, 'result/video_without_audio.mp4')
+    image = image_path + 'frame_%05d.png'
+    save_loc = './result/video_without_audio.mp4'
     cmd_make_video = 'ffmpeg -framerate ' + str(fps) + ' -i ' + image + ' -pix_fmt yuv420p ' + save_loc
 
     shell = shell_default
@@ -519,7 +509,7 @@ def make_video_from_frames(image_path, fps, shell_default):
 # extract audio from the audio driver
 def extract_audio(image_path, audio_driver_path, shell_default):
 
-    audio_output = os.path.join(image_path, './result/audio_only.mp4')
+    audio_output = './result/audio_only.mp4'
     
     # cmd_extract_audio = 'ffmpeg -i ' + audio_driver_path + ' -ab 160k -ac 2 -ar 16000 -vn ' + audio_output
     cmd_extract_audio = 'ffmpeg -i ' + audio_driver_path + ' -ac 2 -ar 48000 -vn ' + audio_output
@@ -530,9 +520,9 @@ def extract_audio(image_path, audio_driver_path, shell_default):
 # combine the two streams together (new audio with originally exisiting video)
 def combine_audio_video(image_path, shell_default):
 
-    video_input = os.path.join(image_path, './result/video_without_audio.mp4')
-    audio_input = os.path.join(image_path, './result/audio_only.mp4')
-    output = os.path.join(image_path, './result/final_output.mp4')
+    video_input = './result/video_without_audio.mp4'
+    audio_input = './result/audio_only.mp4'
+    output = './result/final_output.mp4'
 
     # cmd_combine = 'ffmpeg -i ' + video_input + ' -i ' + audio_input + ' -shortest -c:v copy -c:a aac -b:a 256k ' + output
     cmd_combine = 'ffmpeg -i ' + video_input + ' -i ' + audio_input + ' -c:v copy -c:a aac -b:a 256k ' + output
