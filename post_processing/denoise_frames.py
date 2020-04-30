@@ -15,6 +15,7 @@ from torchvision import transforms
 from PIL import Image
 from skimage.measure import compare_psnr
 from denoising_utils.denoising_utils import *
+from denoising_utils.common_utils import *
 from denoising_models import *
 
 # torch.backends.cudnn.enabled = True
@@ -26,8 +27,10 @@ imsize =-1
 PLOT = True
 sigma = 25
 sigma_ = sigma/255.
+to_image = transforms.ToPILImage()
+to_tensor = transforms.ToTensor()
 
-def DIP_denoise(rect_frame, circular_frame, out_frame, base_center_x, base_center_y, num_iter = 1200):
+def DIP_denoise(rect_frame, circular_frame, out_frame, base_center_x, base_center_y, num_iter = 2):
 
     '''
     Arguments:
