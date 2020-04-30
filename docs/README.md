@@ -131,7 +131,7 @@ The results of all three smoothing stages are shown below:
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <figcaption> Rectangular crop-paste </figcaption> <em>	</em> </figure> <figure> <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em> </figure>  <figure> <img src="assets/final_frame.png" alt="final-frame" style="zoom:100%;" align="middle" width=240 height=135 />
+<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em>  <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em> <img src="assets/final_frame.png" alt="final-frame" style="zoom:100%;" align="middle" width=240 height=135 />
 </figure>
 </div>
 
