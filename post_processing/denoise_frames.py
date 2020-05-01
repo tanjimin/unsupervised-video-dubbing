@@ -18,9 +18,9 @@ from denoising_utils.denoising_utils import *
 from denoising_utils.common_utils import *
 from denoising_models import *
 
-# torch.backends.cudnn.enabled = True
-# torch.backends.cudnn.benchmark =True
-dtype = torch.cuda.float if torch.cuda.is_available() else torch.float
+torch.backends.cudnn.enabled = True
+torch.backends.cudnn.benchmark =True
+dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.float
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 imsize =-1
@@ -30,7 +30,7 @@ sigma_ = sigma/255.
 to_image = transforms.ToPILImage()
 to_tensor = transforms.ToTensor()
 
-def DIP_denoise(rect_frame, circular_frame, out_frame, base_center_x, base_center_y, num_iter = 2):
+def DIP_denoise(rect_frame, circular_frame, out_frame, base_center_x, base_center_y, num_iter = 1200):
 
     '''
     Arguments:

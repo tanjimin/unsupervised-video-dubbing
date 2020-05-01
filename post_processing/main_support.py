@@ -181,6 +181,7 @@ def detect_keypoints(frame, filename):
         print("Exception: Number of faces detected for {}: {}".format(filename, len(dets)))
         print("Input an integer to choose one face (START from 0): {}".format(dets))
         chosen_face = int(input())
+        # chosen_face = 0
         print('-'*30)
         for k, d in enumerate(dets):
             if k == chosen_face:
@@ -525,7 +526,7 @@ def combine_audio_video(image_path, shell_default):
     output = './result/final_output.mp4'
 
     # cmd_combine = 'ffmpeg -i ' + video_input + ' -i ' + audio_input + ' -shortest -c:v copy -c:a aac -b:a 256k ' + output
-    cmd_combine = 'ffmpeg -i ' + video_input + ' -i ' + audio_input + ' -c:v copy -c:a aac -b:a 256k ' + output
+    cmd_combine = 'ffmpeg -i ' + video_input + ' -i ' + audio_input + ' -shortest -c:v copy -c:a aac -b:a 256k ' + output
     shell = shell_default
     subprocess.call([shell, '-c', cmd_combine], stdout = open('/dev/null','w'), stderr = subprocess.STDOUT)
 
