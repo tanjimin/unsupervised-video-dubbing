@@ -129,11 +129,11 @@ At this stage, for each frame in the video, we have two versions of the output -
 
 The results of all three smoothing stages are shown below:
 
-<p float="left">
+<div style="text-align: center;">
 <figure>
 <img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em>  <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em> <img src="assets/final_frame.png" alt="final-frame" style="zoom:100%;" align="middle" width=240 height=135 />
 </figure>
-</p>
+</div>
 
 ## Result
 
