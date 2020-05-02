@@ -120,7 +120,8 @@ if int_step == 5:
     audio_driver_path = input('===> ')
     assert os.path.isfile(audio_driver_path)
 
-    fps = 25.92002592002592
+    # fps = 25.92002592002592
+    fps = 28.76
     
     step_5_main(shell_default, image_path, audio_driver_path, fps)
 
