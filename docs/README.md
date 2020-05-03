@@ -5,7 +5,7 @@ Authors: Jimin Tan, Chenqin Yang, Yakun Wang, Yash Deshpande
 
 Advisor:  Prof. Kyunghyun Cho
 
-Github: https://github.com/tanjimin/unsupervised-video-dubbing
+Github: [https://github.com/tanjimin/unsupervised-video-dubbing](https://github.com/tanjimin/unsupervised-video-dubbing)
 
 ## Introduction
 We tackle the problem of generative video dubbing by modifying a video of a person speaking in one language so that the person is perceived as speaking the same content in another language.
@@ -140,5 +140,15 @@ The results of all three smoothing stages are shown below:
 This is a 10-second video of a person originally speaking Spanish but conditioned on English audio.
 
 <div style="text-align: center;">
+<figure>
+<iframe src="https://drive.google.com/file/d/1nJbIkgR3d8RjdHqfWGGI47EYkDFjKmBw/preview" width="480" height="270"></iframe>
+<figcaption>Video 1: Original spanish video</figcaption>
+</figure>
+</div>  
+
+<div style="text-align: center;">
+<figure>
 <iframe src="https://drive.google.com/file/d/1oy-ZEF5E6jcbtCeFH9EbYgGT1U26lqbd/preview" width="480" height="270"></iframe>
+<figcaption>Video 2:  Spanish speaking video dubbed to English</figcaption>
+</figure>
 </div>  
