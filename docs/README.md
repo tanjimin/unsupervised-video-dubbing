@@ -3,7 +3,9 @@ Project: Unsupervised Generative Video Dubbing
 
 Authors: Jimin Tan, Chenqin Yang, Yakun Wang, Yash Deshpande
 
-Project Advisor:  Prof. Kyunghyun Cho
+Advisor:  Prof. Kyunghyun Cho
+
+Github: https://github.com/tanjimin/unsupervised-video-dubbing
 
 ## Introduction
 We tackle the problem of generative video dubbing by modifying a video of a person speaking in one language so that the person is perceived as speaking the same content in another language.
