@@ -8,7 +8,7 @@ Project Website: [https://tanjimin.github.io/unsupervised-video-dubbing/](https:
 Training Code for the dubbing model is under the root directory. We used a pre-processed LRW for training. See `data.py` for details.
 
 
-We included trained weights for the models and a simple depolyment pipeline which is included under  `post_processing` subdirectory. The pipeline takes a video and a equal duration audio segments and output a dubbed video based on audio information. See the instruction below for model deployment. 
+We created a simple depolyment pipeline which can be find under  `post_processing` subdirectory. The pipeline takes the model weights we pre-trained on LRW. The pipeline takes a video and a equal duration audio segments and output a dubbed video based on audio information. See the instruction below for more details. 
 
 ## Requirement
 
@@ -51,7 +51,7 @@ We included trained weights for the models and a simple depolyment pipeline whic
 
 
 - **Go to** `post_processing` directory
-- Run: ```python3 main.py -r step  ``` (corresponding step in below)
+- Run: ```python3 main.py -r step  ``` (corresponding step below)
   - e.g: `python3 main.py -r 1` will run the first step and etc 
 
 #### Step 1 — generate landmarks
