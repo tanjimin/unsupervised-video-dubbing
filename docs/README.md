@@ -131,7 +131,7 @@ At this stage, for each frame in the video, we have two versions of the output -
 
 The results of all three smoothing stages are shown below:
 <div style="text-align: center;">
-<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle"/>   <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:100%;" align="middle"/> <img src="assets/final_frame.png" alt="final-frame" style="zoom:100%;" align="middle"/>
+<img src="assets/rect_frame.png" alt="rect-frame" style="zoom:10%;" align="middle"/>   <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:10%;" align="middle"/> <img src="assets/final_frame.png" alt="final-frame" style="zoom:10%;" align="middle"/>
 </div>
 
 ## Result
