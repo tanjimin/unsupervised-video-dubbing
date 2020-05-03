@@ -20,7 +20,7 @@ Altough this task is gennerative in nature, we propose a novel solution that is 
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/overall_structure.pdf" alt="Project Pipeline" style="zoom:100%;" align="middle"/>
+<img src="assets/overall_structure.png" alt="Project Pipeline" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 1: Project Pipeline</figcaption>
 </figure>
 </div>  
@@ -32,14 +32,14 @@ Altough this task is gennerative in nature, we propose a novel solution that is 
 - Video clips of people speaking with mouth position fixed in-frame
 - Dataset used:
 	- [**Lip Reading Sentences in the Wild (LRW)**](http://www.robots.ox.ac.uk/~vgg/data/lip_reading/index.html#about)
-- **Bloomberg newscast video** (Internal Evaluation Dataset)
+	- **Bloomberg newscast video** (Internal Evaluation Dataset)
 
 ### Data Preprocessing
 Since we re-formulate the problem to be a regression problem, we need to transform the dataset to face landmarks using Dlib. We also transform raw audio signals to MFCC features using the LibROSA library. The processed data is saved in `.npz` format.
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/data_processing.pdf" alt="Data pre-processing" style="zoom:100%;" align="middle"/>
+<img src="assets/data_processing.png" alt="Data pre-processing" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 2: Data Preprocessing</figcaption>
 </figure>
 </div>  
@@ -50,7 +50,7 @@ Our model adpots an encoder-decoder design. We have two encoders for face and au
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/model.pdf" alt="Model structure" style="zoom:100%;" align="middle"/>
+<img src="assets/model.png" alt="Model structure" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 3: Model Structure</figcaption>
 </figure>
 </div>  
@@ -67,7 +67,7 @@ Since we have the ground truth mouth landmark, the first part of the training is
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/reconstruction.pdf" alt="Reconstruction" style="zoom:100%;" align="middle"/>
+<img src="assets/reconstruction.png" alt="Reconstruction" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 4: Reconstruction Loss</figcaption>
 </figure>
 </div>  
@@ -77,7 +77,7 @@ Restruction loss with MSE has a natrual flaw that the loss function emphasize lo
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/loss_function_2.pdf" alt="Reconstruction" style="zoom:100%;" align="middle"/>
+<img src="assets/loss_function_2.png" alt="Reconstruction" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 5: Contrastive Learning with open level function</figcaption>
 </figure>
 </div>  
@@ -86,7 +86,7 @@ The openness measurements(open level) mentioned above is defined as follows:
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/loss_function.pdf" alt="Open level function" style="zoom:80%;" align="middle"/>
+<img src="assets/loss_function.png" alt="Open level function" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 6: Open level function</figcaption>
 </figure>
 </div>  
@@ -95,7 +95,7 @@ The final training pipeline consists of reconsruction and contrastive learning. 
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/training_graph.pdf" alt="Training" style="zoom:100%;" align="middle"/>
+<img src="assets/training_graph.png" alt="Training" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 7: Training Pipeline with reconstruction and contrastive learning</figcaption>
 </figure>
 </div>  
@@ -108,7 +108,7 @@ We use Vid2Vid from NVIDIA to convert generated face (with mouth) landmarks to i
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/post_processing.pdf" alt="Post processing" style="zoom:100%;" align="middle"/>
+<img src="assets/post_processing.png" alt="Post processing" style="zoom:100%;" align="middle"/>
 <figcaption>Figure 8: Post processing pipeline</figcaption>
 </figure>
 </div>  
@@ -120,7 +120,7 @@ The pasted mouth image patch can have borders around it that look unnatural. In 
 
 <div style="text-align: center;">
 <figure>
-<img src="assets/smoothing.pdf" alt="Post processing" style="zoom:60%;" align="middle"/>
+<img src="assets/smoothing.png" alt="Post processing" style="zoom:60%;" align="middle"/>
 <figcaption>Figure 9: Mouth edge smoothing</figcaption>
 </figure>
 </div> 
