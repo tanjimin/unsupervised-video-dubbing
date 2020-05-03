@@ -130,9 +130,7 @@ At this stage, for each frame in the video, we have two versions of the output -
 The results of all three smoothing stages are shown below:
 
 <div style="text-align: center;">
-<figure>
 <img src="assets/rect_frame.png" alt="rect-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em>  <img src="assets/circ_frame.png" alt="circ-frame" style="zoom:100%;" align="middle" width=240 height=135 /> <em>	</em> <img src="assets/final_frame.png" alt="final-frame" style="zoom:100%;" align="middle" width=240 height=135 />
-</figure>
 </div>
 
 ## Result
@@ -140,5 +138,5 @@ The results of all three smoothing stages are shown below:
 This is a 10-second video of a person originally speaking Spanish but conditioned on English audio.
 
 <div style="text-align: center;">
-<iframe src="https://drive.google.com/file/d/1tVfDd0cn6nh4w_KBQi8AXc8L8gQHuuhj/preview" width="480" height="270"></iframe>
+<iframe src="https://drive.google.com/file/d/1oy-ZEF5E6jcbtCeFH9EbYgGT1U26lqbd/preview" width="480" height="270"></iframe>
 </div>  
