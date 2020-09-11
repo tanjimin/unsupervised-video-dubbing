@@ -13,8 +13,6 @@ class FaceEncoder(nn.Module):
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 16),
-            nn.BatchNorm1d(16),
-            nn.ReLU(),
             )
 
         for m in self.modules():
@@ -40,8 +38,6 @@ class AudioEncoder(nn.Module):
             nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
             )
 
         for m in self.modules():
